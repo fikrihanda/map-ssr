@@ -25,7 +25,7 @@ const mapAlt = computed(() => {
     return null
   if (!mapZoom.value)
     return null
-  return altitudeMap(mapZoom)
+  return altitudeMap(mapZoom.value)
 })
 
 const zoomChanged = function () {
