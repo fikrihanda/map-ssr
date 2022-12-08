@@ -6,43 +6,6 @@ useHead({
   title: 'Map',
 })
 
-const mapStyles = [
-  {
-    featureType: 'administrative',
-    elementType: 'geometry',
-    stylers: [
-      {
-        visibility: 'off',
-      },
-    ],
-  },
-  {
-    featureType: 'poi',
-    stylers: [
-      {
-        visibility: 'off',
-      },
-    ],
-  },
-  {
-    featureType: 'road',
-    elementType: 'labels.icon',
-    stylers: [
-      {
-        visibility: 'off',
-      },
-    ],
-  },
-  {
-    featureType: 'transit',
-    stylers: [
-      {
-        visibility: 'off',
-      },
-    ],
-  },
-]
-
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const mapBounds = ref<{
@@ -62,9 +25,7 @@ const mapAlt = computed(() => {
     return null
   if (!mapZoom.value)
     return null
-  const partEq = (0.05 * (591657550.5 / 2.0 ** (mapZoom.value - 1) / 2))
-  const altitudeMap = partEq * (Math.cos(toRadians(85.362 / 2)) / Math.sin(toRadians(85.362 / 2)))
-  return altitudeMap
+  return altitudeMap(mapZoom)
 })
 
 const zoomChanged = function () {
