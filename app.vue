@@ -9,10 +9,10 @@ useHead({
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const mapBounds = ref<{
-  north: number
-  west: number
-  east: number
-  south: number
+  north_east: [number, number]
+  south_west: [number, number]
+  north_west: [number, number]
+  south_east: [number, number]
 } | null>(null)
 
 const mapReady = computed(() => {
@@ -34,14 +34,25 @@ const zoomChanged = function () {
   mapZoom.value = map.value?.map?.getZoom() ?? null
 }
 const boundsChanged = function () {
-  const getBounds = map.value?.map?.getBounds() ?? null
+  if (!map.value)
+    return
+  if (!map.value.map)
+    return
+  const getBounds = map.value.map.getBounds() ?? null
   if (!getBounds)
     return
+  const center = map.value.map.getCenter()
+  if (!center)
+    return
+  const east = getBounds.getNorthEast().lng()
+  const north = getBounds.getNorthEast().lat()
+  const west = getBounds.getSouthWest().lng()
+  const south = getBounds.getSouthWest().lat()
   mapBounds.value = {
-    east: getBounds.getNorthEast().lng(),
-    north: getBounds.getNorthEast().lat(),
-    west: getBounds.getSouthWest().lng(),
-    south: getBounds.getSouthWest().lat(),
+    north_east: [north, east],
+    south_west: [south, west],
+    north_west: [north, west],
+    south_east: [south, east],
   }
 }
 </script>
@@ -79,7 +90,7 @@ const boundsChanged = function () {
           </div>
           <div v-for="(mapBound, key) in mapBounds" :key="key">
             <div>
-              <b>{{ useCapitalize(key) }}</b>: {{ mapBound }}
+              <b>{{ key.split('_').map(k => useCapitalize(k)).join(' ') }}</b>: {{ mapBound.join(' ') }}
             </div>
           </div>
         </VSheet>
