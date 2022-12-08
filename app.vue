@@ -6,6 +6,43 @@ useHead({
   title: 'Map',
 })
 
+const mapStyles = [
+  {
+    featureType: 'administrative',
+    elementType: 'geometry',
+    stylers: [
+      {
+        visibility: 'off',
+      },
+    ],
+  },
+  {
+    featureType: 'poi',
+    stylers: [
+      {
+        visibility: 'off',
+      },
+    ],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.icon',
+    stylers: [
+      {
+        visibility: 'off',
+      },
+    ],
+  },
+  {
+    featureType: 'transit',
+    stylers: [
+      {
+        visibility: 'off',
+      },
+    ],
+  },
+]
+
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const mapBounds = ref<{
@@ -113,6 +150,8 @@ const boundsChanged = function () {
           :fullscreen-control="false"
           :map-type-control="false"
           :street-view-control="false"
+          :styles="mapStyles"
+          map-id=""
           @zoom_changed="zoomChanged"
           @idle="boundsChanged"
         />
