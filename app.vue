@@ -70,9 +70,10 @@ const boundsChanged = function () {
               position: 'absolute',
               top: 16,
               left: 16,
-              width: '30%',
-              zIndex: 2020,
+              width: 450,
+              maxWidth: 'calc(100% - 36px)',
               padding: 16,
+              zIndex: 2020,
             }),
             'rounded-lg',
           )"
