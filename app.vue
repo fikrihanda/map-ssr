@@ -6,6 +6,8 @@ useHead({
   title: 'Map',
 })
 
+const { getGeo } = useGeoLoc()
+
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const mapBounds = ref<{
@@ -17,6 +19,10 @@ const mapBounds = ref<{
 
 const mapReady = computed(() => {
   if (!map.value)
+    return false
+  if (!mapZoom.value)
+    return false
+  if (!mapBounds.value)
     return false
   return map.value.ready
 })
@@ -53,6 +59,16 @@ const boundsChanged = function () {
     south_east: [south, east],
   }
 }
+
+watch(mapReady, (val) => {
+  if (val) {
+    zoomChanged()
+    getGeo({
+      altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '',
+      listLatlon: '',
+    })
+  }
+})
 </script>
 
 <template>

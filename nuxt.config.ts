@@ -4,7 +4,19 @@ export default defineNuxtConfig({
   ssr: false,
   modules: [
     '@vueuse/nuxt',
+    [
+      '@pinia/nuxt',
+      {
+        autoImports: ['defineStore'],
+      },
+    ],
     'nuxt-lodash',
     '~/modules/vuetify',
   ],
+  runtimeConfig: {
+    token: process.env.TOKEN,
+  },
+  imports: {
+    dirs: ['stores'],
+  },
 })
