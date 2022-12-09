@@ -19,11 +19,13 @@
     "@mdi/font": "^7.0.96",
     "@pinia/nuxt": "^0.4.6",
     "@types/google.maps": "^3.50.5",
+    "@types/rbush": "^3.0.0",
     "@vueuse/core": "^9.6.0",
     "@vueuse/nuxt": "^9.6.0",
     "lodash-es": "^4.17.21",
     "nuxt-lodash": "^2.4.1",
     "pinia": "^2.0.27",
+    "rbush": "^3.0.1",
     "vue": "^3.2.45",
     "vue3-google-map": "^0.15.0",
     "vuetify": "^3.0.4"

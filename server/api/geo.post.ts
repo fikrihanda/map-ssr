@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const { token } = useRuntimeConfig()
   const body = await readBody<{
     altitude: string
-    listLatlon: string
+    list: string
   }>(event)
 
   const res = await $fetch<{
@@ -45,6 +45,6 @@ export default defineEventHandler(async (event) => {
   return {
     layer,
     warna,
-    attribute: parse,
+    lokasi: parse,
   }
 })

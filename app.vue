@@ -6,8 +6,10 @@ useHead({
   title: 'Map',
 })
 
-const { getGeo } = useGeoLoc()
+const bush = new BushMarker()
+const geoLoc = useGeoLoc()
 
+const isFirst = ref(true)
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const mapBounds = ref<{
@@ -16,13 +18,10 @@ const mapBounds = ref<{
   north_west: [number, number]
   south_east: [number, number]
 } | null>(null)
+const markers = ref<google.maps.Marker[]>([] as google.maps.Marker[])
 
 const mapReady = computed(() => {
   if (!map.value)
-    return false
-  if (!mapZoom.value)
-    return false
-  if (!mapBounds.value)
     return false
   return map.value.ready
 })
@@ -33,6 +32,8 @@ const mapAlt = computed(() => {
     return null
   return altitudeMap(mapZoom.value)
 })
+const pelanggan = computedEager(() => geoLoc.getPelanggan)
+const type = computedEager(() => geoLoc.getType)
 
 const zoomChanged = function () {
   mapZoom.value = map.value?.map?.getZoom() ?? null
@@ -60,13 +61,62 @@ const boundsChanged = function () {
   }
 }
 
-watch(mapReady, (val) => {
-  if (val) {
-    zoomChanged()
-    getGeo({
-      altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '',
-      listLatlon: '',
+const getGeoApi = useDebounce(async () => {
+  if (!map.value)
+    return
+  if (!map.value.map)
+    return
+  if (!mapZoom.value)
+    return
+  if (!mapBounds.value)
+    return
+  try {
+    await geoLoc.getGeo({
+    // altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '',
+      altitude: '190',
+      list: (() => {
+        return [
+          mapBounds.value?.north_west.join('##'),
+          mapBounds.value?.north_east.join('##'),
+          mapBounds.value?.south_east.join('##'),
+          mapBounds.value?.south_west.join('##'),
+        ].join('@@')
+      })(),
+      baru: isFirst.value ? '1' : '0',
     })
+    if (type.value === 'pelanggan') {
+      bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
+        return new google.maps.Marker({
+          position: {
+            lat: Number(lok.lat),
+            lng: Number(lok.lng),
+          },
+        })
+      }) ?? [])
+    }
+    if (isFirst.value)
+      isFirst.value = false
+  }
+  catch (err) {}
+}, 500)
+
+// const bushAdd = function () {
+//   bush
+// }
+
+const onIdle = async function () {
+  boundsChanged()
+  await getGeoApi()
+}
+
+watch(mapReady, (val) => {
+  if (!map.value)
+    return
+  if (val) {
+    bush.addMap(map.value.map as google.maps.Map)
+    zoomChanged()
+    boundsChanged()
+    getGeoApi()
   }
 })
 </script>
@@ -117,10 +167,10 @@ watch(mapReady, (val) => {
             height: '100vh',
           })"
           :center="{
-            lat: -1.212866,
-            lng: 118.7380961,
+            lat: -6.3426762,
+            lng: 106.7868379,
           }"
-          :zoom="5.57"
+          :zoom="20"
           :pan-control="false"
           :zoom-control="false"
           :scale-control="false"
@@ -131,7 +181,7 @@ watch(mapReady, (val) => {
           :styles="mapStyles"
           map-id=""
           @zoom_changed="zoomChanged"
-          @idle="boundsChanged"
+          @idle="onIdle"
         />
       </div>
     </VMain>
