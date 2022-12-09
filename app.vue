@@ -95,7 +95,7 @@ watch(mapReady, (val) => {
           )"
         >
           <div>
-            <b>Map Ready</b>: {{ mapReady && 'Ready' }}
+            <b>Map is ready</b>: {{ mapReady && 'Ready' }}
           </div>
           <div>
             <b>Zoom</b>: {{ mapZoom }}
