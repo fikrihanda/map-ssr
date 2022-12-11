@@ -31,16 +31,23 @@ export const useGeoLoc = defineStore('GeoLoc', {
       if (this.isHit)
         return
       this.isHit = true
+      const prevType = this.type
       try {
         const res = await $fetch('/api/geo', {
           method: 'post',
           body: data,
         })
-        if (res.layer === '1') {
+        if (res.layer === '1')
           this.type = 'pelanggan'
-          this.pelanggan = useOmit(res, ['layer'])
-        }
+        if (res.layer === '2')
+          this.type = 'kelurahan'
+        if (res.layer === '3')
+          this.type = 'kecamatan'
+        if (res.layer === '4')
+          this.type = 'kabupaten'
+        this.pelanggan = useOmit(res, ['layer'])
         this.isHit = false
+        return { prevType }
       }
       catch (err) {
         this.isHit = false

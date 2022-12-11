@@ -33,6 +33,10 @@ const mapAlt = computed(() => {
   return altitudeMap(mapZoom.value)
 })
 const pelanggan = computedEager(() => geoLoc.getPelanggan)
+const kecamatan = computedEager(() => geoLoc.kecamatan)
+const kabupaten = computedEager(() => geoLoc.kabupaten)
+const provinsi = computedEager(() => geoLoc.provinsi)
+const kelurahan = computedEager(() => geoLoc.kelurahan)
 const type = computedEager(() => geoLoc.getType)
 
 const zoomChanged = function () {
@@ -71,7 +75,7 @@ const getGeoApi = useDebounce(async () => {
   if (!mapBounds.value)
     return
   try {
-    await geoLoc.getGeo({
+    const res = await geoLoc.getGeo({
       altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '190',
       list: (() => {
         return [
@@ -83,8 +87,51 @@ const getGeoApi = useDebounce(async () => {
       })(),
       baru: isFirst.value ? '1' : '0',
     })
+    if (res?.prevType !== type.value)
+      bush.clear()
+
     if (type.value === 'pelanggan') {
       bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
+        return new google.maps.Marker({
+          position: {
+            lat: Number(lok.lat),
+            lng: Number(lok.lng),
+          },
+        })
+      }) ?? [])
+    }
+    if (type.value === 'kabupaten') {
+      bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
+        return new google.maps.Marker({
+          position: {
+            lat: Number(lok.lat),
+            lng: Number(lok.lng),
+          },
+        })
+      }) ?? [])
+    }
+    if (type.value === 'kecamatan') {
+      bush.addMarkers(kecamatan.value?.lokasi.map((lok) => {
+        return new google.maps.Marker({
+          position: {
+            lat: Number(lok.lat),
+            lng: Number(lok.lng),
+          },
+        })
+      }) ?? [])
+    }
+    if (type.value === 'provinsi') {
+      bush.addMarkers(provinsi.value?.lokasi.map((lok) => {
+        return new google.maps.Marker({
+          position: {
+            lat: Number(lok.lat),
+            lng: Number(lok.lng),
+          },
+        })
+      }) ?? [])
+    }
+    if (type.value === 'kelurahan') {
+      bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
         return new google.maps.Marker({
           position: {
             lat: Number(lok.lat),
@@ -98,10 +145,6 @@ const getGeoApi = useDebounce(async () => {
   }
   catch (err) {}
 }, 500)
-
-// const bushAdd = function () {
-//   bush
-// }
 
 const onIdle = async function () {
   boundsChanged()

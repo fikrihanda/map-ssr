@@ -43,7 +43,10 @@ export class BushMarker {
     this._positionsTree.load(positionBoxes)
   }
 
-  private _reset() {
+  clear() {
+    this._positionsTree = new RBush()
+    this._markersTree = new RBush()
+    this._markers = []
     this._redraw()
   }
 
