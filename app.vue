@@ -104,7 +104,6 @@ const getGeoApi = useDebounce(async () => {
       }) ?? [])
     }
     if (type.value === 'kabupaten') {
-      console.log(kabupaten.value)
       bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
         return new google.maps.Marker({
           position: {
