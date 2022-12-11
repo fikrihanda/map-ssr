@@ -20,6 +20,10 @@ export const useGeoLoc = defineStore('GeoLoc', {
   }),
   getters: {
     getPelanggan: state => state.pelanggan,
+    getProvinsi: state => state.provinsi,
+    getKabupaten: state => state.kabupaten,
+    getKecamatan: state => state.kecamatan,
+    getKelurahan: state => state.kelurahan,
     getType: state => state.type,
   },
   actions: {
@@ -37,17 +41,26 @@ export const useGeoLoc = defineStore('GeoLoc', {
           method: 'post',
           body: data,
         })
-        if (res.layer === '1')
+        if (res.layer === '1') {
           this.type = 'pelanggan'
-        if (res.layer === '2')
+          this.pelanggan = useOmit(res, ['layer'])
+        }
+        if (res.layer === '2') {
           this.type = 'kelurahan'
-        if (res.layer === '3')
+          this.kelurahan = useOmit(res, ['layer'])
+        }
+        if (res.layer === '3') {
           this.type = 'kecamatan'
-        if (res.layer === '4')
+          this.kecamatan = useOmit(res, ['layer'])
+        }
+        if (res.layer === '4') {
           this.type = 'kabupaten'
-        if (res.layer === '5')
+          this.kabupaten = useOmit(res, ['layer'])
+        }
+        if (res.layer === '5') {
           this.type = 'provinsi'
-        this.pelanggan = useOmit(res, ['layer'])
+          this.provinsi = useOmit(res, ['layer'])
+        }
         this.isHit = false
         return { prevType }
       }

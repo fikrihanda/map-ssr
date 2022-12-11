@@ -33,10 +33,10 @@ const mapAlt = computed(() => {
   return altitudeMap(mapZoom.value)
 })
 const pelanggan = computedEager(() => geoLoc.getPelanggan)
-const kecamatan = computedEager(() => geoLoc.kecamatan)
-const kabupaten = computedEager(() => geoLoc.kabupaten)
-const provinsi = computedEager(() => geoLoc.provinsi)
-const kelurahan = computedEager(() => geoLoc.kelurahan)
+const kecamatan = computedEager(() => geoLoc.getKecamatan)
+const kabupaten = computedEager(() => geoLoc.getKabupaten)
+const provinsi = computedEager(() => geoLoc.getProvinsi)
+const kelurahan = computedEager(() => geoLoc.getKelurahan)
 const type = computedEager(() => geoLoc.getType)
 
 const zoomChanged = function () {
@@ -85,7 +85,7 @@ const getGeoApi = useDebounce(async () => {
           mapBounds.value?.south_west.join('##'),
         ].join('@@')
       })(),
-      baru: isFirst.value ? '1' : '0',
+      baru: '1',
     })
     if (res?.prevType !== type.value) {
       bush.clear()
@@ -104,6 +104,7 @@ const getGeoApi = useDebounce(async () => {
       }) ?? [])
     }
     if (type.value === 'kabupaten') {
+      console.log(kabupaten.value)
       bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
         return new google.maps.Marker({
           position: {
@@ -143,6 +144,7 @@ const getGeoApi = useDebounce(async () => {
         })
       }) ?? [])
     }
+    bush._redraw()
     if (isFirst.value)
       isFirst.value = false
   }
