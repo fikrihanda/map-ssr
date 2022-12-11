@@ -45,6 +45,8 @@ export const useGeoLoc = defineStore('GeoLoc', {
           this.type = 'kecamatan'
         if (res.layer === '4')
           this.type = 'kabupaten'
+        if (res.layer === '5')
+          this.type = 'provinsi'
         this.pelanggan = useOmit(res, ['layer'])
         this.isHit = false
         return { prevType }
