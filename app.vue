@@ -72,8 +72,7 @@ const getGeoApi = useDebounce(async () => {
     return
   try {
     await geoLoc.getGeo({
-    // altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '',
-      altitude: '190',
+      altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '190',
       list: (() => {
         return [
           mapBounds.value?.north_west.join('##'),

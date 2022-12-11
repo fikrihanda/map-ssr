@@ -24,7 +24,7 @@ export const useGeoLoc = defineStore('GeoLoc', {
   },
   actions: {
     async getGeo(data: {
-      altitude: string
+      altitude: string | number
       list: string
       baru: string
     }) {
