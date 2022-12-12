@@ -85,13 +85,10 @@ const getGeoApi = useDebounce(async () => {
           mapBounds.value?.south_west.join('##'),
         ].join('@@')
       })(),
-      baru: '1',
+      baru: isFirst.value ? '1' : '0',
     })
-    if (res?.prevType !== type.value) {
+    if (res?.prevType !== type.value)
       bush.clear()
-      if (!isFirst.value)
-        isFirst.value = true
-    }
 
     if (type.value === 'pelanggan') {
       bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
