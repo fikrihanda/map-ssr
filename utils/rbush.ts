@@ -1,24 +1,32 @@
 import RBush from 'rbush'
 
+export interface LatLgnExtend extends google.maps.LatLngLiteral {
+  warna?: string
+}
+
 export interface Box {
   minX: number
   minY: number
   maxX: number
   maxY: number
-  marker: google.maps.Marker
+  marker: LatLgnExtend
 }
 
 export class BushMarker {
   private _map = null as google.maps.Map | null
-  private _markers = [] as google.maps.Marker[]
+  private _markers = [] as LatLgnExtend[]
   private _markersTree = new RBush<Box>()
   private _positionsTree = new RBush<Box>()
+
+  get markerTree() {
+    return this._markersTree.all()
+  }
 
   addMap(map: google.maps.Map) {
     this._map = map
   }
 
-  addMarker(marker: google.maps.Marker) {
+  addMarker(marker: LatLgnExtend) {
     const { markerBox, positionBox, isVisible } = this._addMarker(marker)
     if (markerBox && isVisible)
       this._markersTree.insert(markerBox)
@@ -26,7 +34,7 @@ export class BushMarker {
       this._positionsTree.insert(positionBox)
   }
 
-  addMarkers(markers: google.maps.Marker[]) {
+  addMarkers(markers: LatLgnExtend[]) {
     const markerBoxes = [] as Box[]
     const positionBoxes = [] as Box[]
 
@@ -44,9 +52,6 @@ export class BushMarker {
   }
 
   clear() {
-    this._markers.forEach((marker) => {
-      marker.setMap(null)
-    })
     this._positionsTree = new RBush()
     this._markersTree = new RBush()
     this._markers = []
@@ -69,20 +74,13 @@ export class BushMarker {
     const map = this._map
     const markers = [] as Box[]
 
-    this._markers.forEach((marker) => {
-      marker.setMap(null)
-    })
-
     const ms = this._positionsTree.search(mapBoundsBox)
 
     ms.forEach(({ marker }) => {
-      const latLng = marker.getPosition() as google.maps.LatLng
+      const latLng = marker
       const projection = map.getProjection() as google.maps.Projection
       const point = projection.fromLatLngToPoint(latLng) as google.maps.Point
       const { x, y } = point
-      // const icon = marker.getIcon() as google.maps.Icon
-      // const anchor = icon.anchor as google.maps.Point
-      // const size = icon.size as google.maps.Size
 
       const markerBox = {
         minX: x,
@@ -93,18 +91,17 @@ export class BushMarker {
       }
 
       markers.push(markerBox)
-      this._drawMarker(marker)
     })
 
     this._markersTree.clear()
     this._markersTree.load(markers)
   }
 
-  private _drawMarker(marker: google.maps.Marker) {
-    marker.setMap(this._map)
-  }
+  // private _drawMarker(marker: google.maps.Marker) {
+  //   marker.setMap(this._map)
+  // }
 
-  private _addMarker(marker: google.maps.Marker) {
+  private _addMarker(marker: LatLgnExtend) {
     if (!this._map)
       return { markerBox: null, positionBox: null, isVisible: null }
 
@@ -112,14 +109,11 @@ export class BushMarker {
     if (!getBounds)
       return { markerBox: null, positionBox: null, isVisible: null }
 
-    const latLng = marker.getPosition() as google.maps.LatLng
+    const latLng = marker
     const isVisible = getBounds.contains(latLng)
     const projection = this._map.getProjection() as google.maps.Projection
     const point = projection.fromLatLngToPoint(latLng) as google.maps.Point
     const { x, y } = point
-
-    if (isVisible)
-      this._drawMarker(marker)
 
     const markerBox = {
       minX: x,
@@ -130,10 +124,10 @@ export class BushMarker {
     }
 
     const positionBox = {
-      minX: latLng.lng(),
-      minY: latLng.lat(),
-      maxX: latLng.lng(),
-      maxY: latLng.lat(),
+      minX: latLng.lng,
+      minY: latLng.lat,
+      maxX: latLng.lng,
+      maxY: latLng.lat,
       marker,
     }
 

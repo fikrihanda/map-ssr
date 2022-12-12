@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { VApp, VMain, VSheet } from 'vuetify/components'
-import { GoogleMap } from 'vue3-google-map'
+import { CustomMarker, GoogleMap } from 'vue3-google-map'
+import type { LatLgnExtend } from './utils/rbush'
 
 useHead({
   title: 'Map',
@@ -18,7 +19,7 @@ const mapBounds = ref<{
   north_west: [number, number]
   south_east: [number, number]
 } | null>(null)
-const markers = ref<google.maps.Marker[]>([] as google.maps.Marker[])
+const markers = ref<LatLgnExtend[]>([])
 
 const mapReady = computed(() => {
   if (!map.value)
@@ -38,6 +39,10 @@ const kabupaten = computedEager(() => geoLoc.getKabupaten)
 const provinsi = computedEager(() => geoLoc.getProvinsi)
 const kelurahan = computedEager(() => geoLoc.getKelurahan)
 const type = computedEager(() => geoLoc.getType)
+
+const markerTreeFun = function () {
+  return bush.markerTree.map(({ marker }) => marker)
+}
 
 const zoomChanged = function () {
   mapZoom.value = map.value?.map?.getZoom() ?? null
@@ -87,60 +92,132 @@ const getGeoApi = useDebounce(async () => {
       })(),
       baru: isFirst.value ? '1' : '0',
     })
-    if (res?.prevType !== type.value)
+    let diff = false
+    if (res?.prevType !== type.value) {
       bush.clear()
+      diff = true
+    }
 
     if (type.value === 'pelanggan') {
-      bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
-        return new google.maps.Marker({
-          position: {
+      if (diff) {
+        bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
+          return {
+            warna: pelanggan.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
-          },
+          }
+        }) ?? [])
+      }
+      else {
+        (
+          pelanggan.value?.lokasi.map((lok) => {
+            return {
+              warna: pelanggan.value?.warna ?? 'black',
+              lat: Number(lok.lat),
+              lng: Number(lok.lng),
+            }
+          }) ?? []
+        ).forEach((marker) => {
+          bush.addMarker(marker)
         })
-      }) ?? [])
+      }
     }
     if (type.value === 'kabupaten') {
-      bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
-        return new google.maps.Marker({
-          position: {
+      if (diff) {
+        bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
+          return {
+            warna: kabupaten.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
-          },
+          }
+        }) ?? [])
+      }
+      else {
+        (
+          kabupaten.value?.lokasi.map((lok) => {
+            return {
+              warna: kabupaten.value?.warna ?? 'black',
+              lat: Number(lok.lat),
+              lng: Number(lok.lng),
+            }
+          }) ?? []
+        ).forEach((marker) => {
+          bush.addMarker(marker)
         })
-      }) ?? [])
+      }
     }
     if (type.value === 'kecamatan') {
-      bush.addMarkers(kecamatan.value?.lokasi.map((lok) => {
-        return new google.maps.Marker({
-          position: {
+      if (diff) {
+        bush.addMarkers(kecamatan.value?.lokasi.map((lok) => {
+          return {
+            warna: kecamatan.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
-          },
+          }
+        }) ?? [])
+      }
+      else {
+        (
+          kecamatan.value?.lokasi.map((lok) => {
+            return {
+              warna: kecamatan.value?.warna ?? 'black',
+              lat: Number(lok.lat),
+              lng: Number(lok.lng),
+            }
+          }) ?? []
+        ).forEach((marker) => {
+          bush.addMarker(marker)
         })
-      }) ?? [])
+      }
     }
     if (type.value === 'provinsi') {
-      bush.addMarkers(provinsi.value?.lokasi.map((lok) => {
-        return new google.maps.Marker({
-          position: {
+      if (diff) {
+        bush.addMarkers(provinsi.value?.lokasi.map((lok) => {
+          return {
+            warna: provinsi.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
-          },
+          }
+        }) ?? [])
+      }
+      else {
+        (
+          provinsi.value?.lokasi.map((lok) => {
+            return {
+              warna: provinsi.value?.warna ?? 'black',
+              lat: Number(lok.lat),
+              lng: Number(lok.lng),
+            }
+          }) ?? []
+        ).forEach((marker) => {
+          bush.addMarker(marker)
         })
-      }) ?? [])
+      }
     }
     if (type.value === 'kelurahan') {
-      bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
-        return new google.maps.Marker({
-          position: {
+      if (diff) {
+        bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
+          return {
+            warna: pelanggan.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
-          },
+          }
+        }) ?? [])
+      }
+      else {
+        (
+          kelurahan.value?.lokasi.map((lok) => {
+            return {
+              warna: pelanggan.value?.warna ?? 'black',
+              lat: Number(lok.lat),
+              lng: Number(lok.lng),
+            }
+          }) ?? []
+        ).forEach((marker) => {
+          bush.addMarker(marker)
         })
-      }) ?? [])
+      }
     }
-    bush._redraw()
     if (isFirst.value)
       isFirst.value = false
   }
@@ -150,6 +227,8 @@ const getGeoApi = useDebounce(async () => {
 const onIdle = async function () {
   boundsChanged()
   await getGeoApi()
+  bush._redraw()
+  markers.value = markerTreeFun()
 }
 
 watch(mapReady, (val) => {
@@ -172,7 +251,7 @@ watch(mapReady, (val) => {
           position: 'relative',
         })"
       >
-        <VSheet
+        <!-- <VSheet
           v-if="mapReady"
           :class="useCx(
             useCss({
@@ -201,7 +280,7 @@ watch(mapReady, (val) => {
               <b>{{ key.split('_').map(k => useCapitalize(k)).join(' ') }}</b>: {{ mapBound.join(' ') }}
             </div>
           </div>
-        </VSheet>
+        </VSheet> -->
         <GoogleMap
           ref="map"
           api-key="AIzaSyCoKkiyHLRZZ-iHPWx-hTLWKvwXSaA70qs"
@@ -225,7 +304,23 @@ watch(mapReady, (val) => {
           map-id=""
           @zoom_changed="zoomChanged"
           @idle="onIdle"
-        />
+        >
+          <CustomMarker
+            v-for="(latlng, i) in markers"
+            :key="i"
+            :options="{ position: latlng }"
+          >
+            <div
+              :style="{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: '2px solid black',
+                backgroundColor: latlng.warna,
+              }"
+            />
+          </CustomMarker>
+        </GoogleMap>
       </div>
     </VMain>
   </VApp>

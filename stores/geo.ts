@@ -62,7 +62,7 @@ export const useGeoLoc = defineStore('GeoLoc', {
           this.provinsi = useOmit(res, ['layer'])
         }
         this.isHit = false
-        return { prevType }
+        return { prevType, warna: res.warna }
       }
       catch (err) {
         this.isHit = false
