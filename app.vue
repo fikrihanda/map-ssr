@@ -251,7 +251,7 @@ watch(mapReady, (val) => {
           position: 'relative',
         })"
       >
-        <!-- <VSheet
+        <VSheet
           v-if="mapReady"
           :class="useCx(
             useCss({
@@ -280,7 +280,7 @@ watch(mapReady, (val) => {
               <b>{{ key.split('_').map(k => useCapitalize(k)).join(' ') }}</b>: {{ mapBound.join(' ') }}
             </div>
           </div>
-        </VSheet> -->
+        </VSheet>
         <GoogleMap
           ref="map"
           api-key="AIzaSyCoKkiyHLRZZ-iHPWx-hTLWKvwXSaA70qs"
@@ -312,8 +312,11 @@ watch(mapReady, (val) => {
           >
             <div
               :style="{
-                width: '20px',
-                height: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: `${changeResizeIcon(mapAlt, type)}px`,
+                height: `${changeResizeIcon(mapAlt, type)}px`,
                 borderRadius: '50%',
                 border: '2px solid black',
                 backgroundColor: latlng.warna,
