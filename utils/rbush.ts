@@ -19,7 +19,7 @@ export class BushMarker {
   private _positionsTree = new RBush<Box>()
 
   get markerTree() {
-    return this._markersTree.all()
+    return this._markersTree
   }
 
   addMap(map: google.maps.Map) {

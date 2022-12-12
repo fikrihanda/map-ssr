@@ -15,6 +15,9 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     token: process.env.TOKEN,
+    public: {
+      mapKey: process.env.MAP_KEY,
+    },
   },
   imports: {
     dirs: ['stores'],

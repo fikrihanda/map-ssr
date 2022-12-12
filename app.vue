@@ -7,6 +7,8 @@ useHead({
   title: 'Map',
 })
 
+const config = useRuntimeConfig()
+
 const bush = new BushMarker()
 const geoLoc = useGeoLoc()
 
@@ -41,7 +43,7 @@ const kelurahan = computedEager(() => geoLoc.getKelurahan)
 const type = computedEager(() => geoLoc.getType)
 
 const markerTreeFun = function () {
-  return bush.markerTree.map(({ marker }) => marker)
+  return bush.markerTree.all().map(({ marker }) => marker)
 }
 
 const zoomChanged = function () {
@@ -198,7 +200,7 @@ const getGeoApi = useDebounce(async () => {
       if (diff) {
         bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
           return {
-            warna: pelanggan.value?.warna ?? 'black',
+            warna: kelurahan.value?.warna ?? 'black',
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -208,7 +210,7 @@ const getGeoApi = useDebounce(async () => {
         (
           kelurahan.value?.lokasi.map((lok) => {
             return {
-              warna: pelanggan.value?.warna ?? 'black',
+              warna: kelurahan.value?.warna ?? 'black',
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -221,7 +223,9 @@ const getGeoApi = useDebounce(async () => {
     if (isFirst.value)
       isFirst.value = false
   }
-  catch (err) {}
+  catch (err) {
+    console.log(err)
+  }
 }, 500)
 
 const onIdle = async function () {
@@ -238,7 +242,9 @@ watch(mapReady, (val) => {
     bush.addMap(map.value.map as google.maps.Map)
     zoomChanged()
     boundsChanged()
-    getGeoApi()
+    // getGeoApi()
+    // bush._redraw()
+    // markers.value = markerTreeFun()
   }
 })
 </script>
@@ -251,7 +257,7 @@ watch(mapReady, (val) => {
           position: 'relative',
         })"
       >
-        <VSheet
+        <!-- <VSheet
           v-if="mapReady"
           :class="useCx(
             useCss({
@@ -280,19 +286,19 @@ watch(mapReady, (val) => {
               <b>{{ key.split('_').map(k => useCapitalize(k)).join(' ') }}</b>: {{ mapBound.join(' ') }}
             </div>
           </div>
-        </VSheet>
+        </VSheet> -->
         <GoogleMap
           ref="map"
-          api-key="AIzaSyCoKkiyHLRZZ-iHPWx-hTLWKvwXSaA70qs"
+          :api-key="config.public.mapKey"
           :class="useCss({
             width: '100%',
             height: '100vh',
           })"
           :center="{
-            lat: -6.3426762,
-            lng: 106.7868379,
+            lat: -0.9277539,
+            lng: 118.4065739,
           }"
-          :zoom="20"
+          :zoom="5.17"
           :pan-control="false"
           :zoom-control="false"
           :scale-control="false"
@@ -303,7 +309,7 @@ watch(mapReady, (val) => {
           :styles="mapStyles"
           map-id=""
           @zoom_changed="zoomChanged"
-          @idle="onIdle"
+          @idle="onIdle()"
         >
           <CustomMarker
             v-for="(latlng, i) in markers"
