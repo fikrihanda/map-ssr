@@ -72,7 +72,7 @@ const boundsChanged = function () {
   }
 }
 
-const getGeoApi = useDebounce(async () => {
+const getGeoApi = async function () {
   if (!map.value)
     return
   if (!map.value.map)
@@ -226,7 +226,7 @@ const getGeoApi = useDebounce(async () => {
   catch (err) {
     console.log(err)
   }
-}, 500)
+}
 
 const onIdle = async function () {
   boundsChanged()
@@ -324,8 +324,8 @@ watch(mapReady, (val) => {
                 width: `${changeResizeIcon(mapAlt, type)}px`,
                 height: `${changeResizeIcon(mapAlt, type)}px`,
                 borderRadius: '50%',
-                border: '2px solid black',
                 backgroundColor: latlng.warna,
+                transition: 'width height 2s',
               }"
             />
           </CustomMarker>
