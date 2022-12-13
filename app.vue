@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { VApp, VMain, VSheet } from 'vuetify/components'
-import { CustomMarker, GoogleMap } from 'vue3-google-map'
+import { VApp, VMain } from 'vuetify/components'
+import { CustomMarker, GoogleMap, Marker } from 'vue3-google-map'
 import type { LatLgnExtend } from './utils/rbush'
 
 useHead({
@@ -356,17 +356,19 @@ const clusterCss = function (warna: string) {
           @zoom_changed="zoomChanged"
           @idle="onIdle()"
         >
-          <CustomMarker
-            v-for="(latlng, i) in markers"
-            :key="i"
-            :options="{ position: latlng }"
-          >
-            <div
-              :class="clusterCss('red')"
+          <template v-for="(latlng, i) in markers" :key="i">
+            <CustomMarker
+              v-if="type !== 'pelanggan'"
+              :options="{ position: latlng }"
             >
-              {{ latlng.jumlah }}
-            </div>
-          </CustomMarker>
+              <div
+                :class="clusterCss('red')"
+              >
+                {{ latlng.jumlah }}
+              </div>
+            </CustomMarker>
+            <Marker v-else :options="{ position: latlng }" />
+          </template>
         </GoogleMap>
       </div>
     </VMain>
