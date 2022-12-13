@@ -3,6 +3,10 @@ import { VApp, VMain, VTooltip } from 'vuetify/components'
 import { CustomMarker, GoogleMap } from 'vue3-google-map'
 import type { LatLgnExtend } from './utils/rbush'
 
+interface LatLgnExtendAndId extends LatLgnExtend {
+  id: string
+}
+
 useHead({
   title: 'Map',
 })
@@ -23,6 +27,8 @@ const mapBounds = ref<{
 } | null>(null)
 const markers = ref<LatLgnExtend[]>([])
 const loading = ref(false)
+const selected = ref<LatLgnExtendAndId | null>(null)
+const tooltip = ref(false)
 
 const mapReady = computed(() => {
   if (!map.value)
@@ -259,22 +265,6 @@ const onIdle = async function () {
   markers.value = markerTreeFun()
 }
 
-watch(mapReady, (val) => {
-  if (!map.value)
-    return
-  if (val) {
-    bush.addMap(map.value.map as google.maps.Map)
-    zoomChanged()
-    boundsChanged()
-  }
-})
-
-watch(loading, (val) => {
-  map.value?.map?.setOptions({
-    scrollwheel: !val,
-  })
-})
-
 const clusterCss = function (warna: string) {
   return useCss({
     'position': 'relative',
@@ -312,6 +302,35 @@ const clusterCss = function (warna: string) {
     },
   })
 }
+
+const addTooltip = function (latlng: LatLgnExtend, id: string) {
+  selected.value = {
+    ...latlng,
+    id,
+  }
+  tooltip.value = true
+}
+
+const removeTooltip = function () {
+  selected.value = null
+  tooltip.value = false
+}
+
+watch(mapReady, (val) => {
+  if (!map.value)
+    return
+  if (val) {
+    bush.addMap(map.value.map as google.maps.Map)
+    zoomChanged()
+    boundsChanged()
+  }
+})
+
+watch(loading, (val) => {
+  map.value?.map?.setOptions({
+    scrollwheel: !val,
+  })
+})
 </script>
 
 <template>
@@ -381,7 +400,7 @@ const clusterCss = function (warna: string) {
               v-if="type !== 'pelanggan'"
               :options="{ position: latlng }"
             >
-              <VTooltip :text="`${useCapitalize(type ?? '')}: ${latlng.nama}`" location="top">
+              <!-- <VTooltip :text="latlng.nama?.toUpperCase()" location="top">
                 <template #activator="{ props }">
                   <div
                     v-bind="props"
@@ -390,7 +409,15 @@ const clusterCss = function (warna: string) {
                     {{ numberUnit(latlng.jumlah ?? 0, 0) }}
                   </div>
                 </template>
-              </VTooltip>
+              </VTooltip> -->
+              <div
+                :id="`marker-${type}-${i}`"
+                :class="clusterCss(colorChange)"
+                @mouseenter="addTooltip(latlng, `marker-${type}-${i}`)"
+                @mouseleave="removeTooltip()"
+              >
+                {{ numberUnit(latlng.jumlah ?? 0, 0) }}
+              </div>
             </CustomMarker>
             <CustomMarker v-else :options="{ position: latlng }">
               <div
@@ -400,11 +427,15 @@ const clusterCss = function (warna: string) {
                   backgroundColor: 'red',
                   borderRadius: '50%',
                   border: '1px solid black',
+                  cursor: 'pointer',
                 }"
+                @mouseenter="addTooltip(latlng, `marker-${type}-${i}`)"
+                @mouseleave="removeTooltip()"
               />
             </CustomMarker>
           </template>
         </GoogleMap>
+        <VTooltip v-model="tooltip" :text="selected?.nama?.toUpperCase()" :activator="`#${selected?.id}`" location="top" />
       </div>
     </VMain>
   </VApp>
