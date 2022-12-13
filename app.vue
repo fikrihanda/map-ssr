@@ -105,6 +105,7 @@ const getGeoApi = async function () {
         bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
           return {
             warna: pelanggan.value?.warna ?? 'black',
+            jumlah: lok.jumlah,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -115,6 +116,7 @@ const getGeoApi = async function () {
           pelanggan.value?.lokasi.map((lok) => {
             return {
               warna: pelanggan.value?.warna ?? 'black',
+              jumlah: lok.jumlah,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -129,6 +131,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
           return {
             warna: kabupaten.value?.warna ?? 'black',
+            jumlah: lok.jumlah,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -139,6 +142,7 @@ const getGeoApi = async function () {
           kabupaten.value?.lokasi.map((lok) => {
             return {
               warna: kabupaten.value?.warna ?? 'black',
+              jumlah: lok.jumlah,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -153,6 +157,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kecamatan.value?.lokasi.map((lok) => {
           return {
             warna: kecamatan.value?.warna ?? 'black',
+            jumlah: lok.jumlah,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -163,6 +168,7 @@ const getGeoApi = async function () {
           kecamatan.value?.lokasi.map((lok) => {
             return {
               warna: kecamatan.value?.warna ?? 'black',
+              jumlah: lok.jumlah,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -177,6 +183,7 @@ const getGeoApi = async function () {
         bush.addMarkers(provinsi.value?.lokasi.map((lok) => {
           return {
             warna: provinsi.value?.warna ?? 'black',
+            jumlah: lok.jumlah,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -187,6 +194,7 @@ const getGeoApi = async function () {
           provinsi.value?.lokasi.map((lok) => {
             return {
               warna: provinsi.value?.warna ?? 'black',
+              jumlah: lok.jumlah,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -201,6 +209,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
           return {
             warna: kelurahan.value?.warna ?? 'black',
+            jumlah: lok.jumlah,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -211,6 +220,7 @@ const getGeoApi = async function () {
           kelurahan.value?.lokasi.map((lok) => {
             return {
               warna: kelurahan.value?.warna ?? 'black',
+              jumlah: lok.jumlah,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -242,11 +252,46 @@ watch(mapReady, (val) => {
     bush.addMap(map.value.map as google.maps.Map)
     zoomChanged()
     boundsChanged()
-    // getGeoApi()
-    // bush._redraw()
-    // markers.value = markerTreeFun()
   }
 })
+
+const clusterCss = function (warna: string) {
+  return useCss({
+    'position': 'relative',
+    'display': 'flex',
+    'alignItems': 'center',
+    'justifyContent': 'center',
+    'width': `${changeResizeIcon(mapAlt.value, type.value)}px`,
+    'height': `${changeResizeIcon(mapAlt.value, type.value)}px`,
+    'borderRadius': '50%',
+    'backgroundColor': warna,
+    'transition': 'width height 2s',
+    'cursor': 'pointer',
+    'color': 'white',
+    '&:before, &:after': {
+      content: '" "',
+      display: 'block',
+      position: 'absolute',
+      transform: 'translate(-50%, -50%)',
+      top: '50%',
+      left: '50%',
+      borderRadius: '50%',
+      backgroundColor: warna,
+    },
+    '&:before': {
+      width: `${changeOpacitySize(mapAlt.value, type.value, 7)}px`,
+      height: `${changeOpacitySize(mapAlt.value, type.value, 7)}px`,
+      opacity: 0.4,
+      zIndex: -1,
+    },
+    '&:after': {
+      width: `${changeOpacitySize(mapAlt.value, type.value, 14)}px`,
+      height: `${changeOpacitySize(mapAlt.value, type.value, 14)}px`,
+      opacity: 0.2,
+      zIndex: -1,
+    },
+  })
+}
 </script>
 
 <template>
@@ -317,17 +362,10 @@ watch(mapReady, (val) => {
             :options="{ position: latlng }"
           >
             <div
-              :style="{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: `${changeResizeIcon(mapAlt, type)}px`,
-                height: `${changeResizeIcon(mapAlt, type)}px`,
-                borderRadius: '50%',
-                backgroundColor: latlng.warna,
-                transition: 'width height 2s',
-              }"
-            />
+              :class="clusterCss('red')"
+            >
+              {{ latlng.jumlah }}
+            </div>
           </CustomMarker>
         </GoogleMap>
       </div>

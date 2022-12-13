@@ -2,6 +2,7 @@ import RBush from 'rbush'
 
 export interface LatLgnExtend extends google.maps.LatLngLiteral {
   warna?: string
+  jumlah?: string | number
 }
 
 export interface Box {

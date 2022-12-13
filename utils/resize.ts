@@ -6,8 +6,8 @@ const breakpoint = {
   provinsi: [501251, 1002500],
 } as const
 
-const minPxl = 10
-const maxPxl = 30
+const minPxl = 15
+const maxPxl = 25
 
 // ceiling((7000 * 100 /  cast((8000/8) as float)) / 8)
 
@@ -34,6 +34,26 @@ export const changeResizeIcon = function (alt: number | null, mode: keyof (typeo
   const percen = calcuPercentage(gerBreak[0], gerBreak[1], al)
 
   const val = calcuValue(minPxl, maxPxl, 100 - percen)
+
+  return val
+}
+
+export const changeOpacitySize = function (alt: number | null, mode: keyof (typeof breakpoint) | null, size = 7) {
+  if (!alt || !mode)
+    return
+  const gerBreak = breakpoint[mode]
+  const [min, max] = gerBreak
+
+  let al = alt
+
+  if (alt <= min)
+    al = min
+  if (alt >= max)
+    al = max
+
+  const percen = calcuPercentage(gerBreak[0], gerBreak[1], al)
+
+  const val = calcuValue(minPxl + size, maxPxl + size, 100 - percen)
 
   return val
 }
