@@ -6,8 +6,8 @@ const breakpoint = {
   provinsi: [501251, 1002500],
 } as const
 
-const minPxl = 15
-const maxPxl = 25
+const minPxl = 25
+const maxPxl = 35
 
 // ceiling((7000 * 100 /  cast((8000/8) as float)) / 8)
 

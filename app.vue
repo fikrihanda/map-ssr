@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { VApp, VMain } from 'vuetify/components'
+import { VApp, VMain, VTooltip } from 'vuetify/components'
 import { CustomMarker, GoogleMap, Marker } from 'vue3-google-map'
 import type { LatLgnExtend } from './utils/rbush'
 
@@ -22,6 +22,7 @@ const mapBounds = ref<{
   south_east: [number, number]
 } | null>(null)
 const markers = ref<LatLgnExtend[]>([])
+const loading = ref(false)
 
 const mapReady = computed(() => {
   if (!map.value)
@@ -81,6 +82,7 @@ const getGeoApi = async function () {
     return
   if (!mapBounds.value)
     return
+  loading.value = true
   try {
     const res = await geoLoc.getGeo({
       altitude: mapAlt.value ? (Math.round(mapAlt.value)).toString() : '190',
@@ -105,7 +107,7 @@ const getGeoApi = async function () {
         bush.addMarkers(pelanggan.value?.lokasi.map((lok) => {
           return {
             warna: pelanggan.value?.warna ?? 'black',
-            jumlah: lok.jumlah,
+            ...lok,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -116,7 +118,7 @@ const getGeoApi = async function () {
           pelanggan.value?.lokasi.map((lok) => {
             return {
               warna: pelanggan.value?.warna ?? 'black',
-              jumlah: lok.jumlah,
+              ...lok,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -131,7 +133,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kabupaten.value?.lokasi.map((lok) => {
           return {
             warna: kabupaten.value?.warna ?? 'black',
-            jumlah: lok.jumlah,
+            ...lok,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -142,7 +144,7 @@ const getGeoApi = async function () {
           kabupaten.value?.lokasi.map((lok) => {
             return {
               warna: kabupaten.value?.warna ?? 'black',
-              jumlah: lok.jumlah,
+              ...lok,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -157,7 +159,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kecamatan.value?.lokasi.map((lok) => {
           return {
             warna: kecamatan.value?.warna ?? 'black',
-            jumlah: lok.jumlah,
+            ...lok,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -168,7 +170,7 @@ const getGeoApi = async function () {
           kecamatan.value?.lokasi.map((lok) => {
             return {
               warna: kecamatan.value?.warna ?? 'black',
-              jumlah: lok.jumlah,
+              ...lok,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -183,7 +185,7 @@ const getGeoApi = async function () {
         bush.addMarkers(provinsi.value?.lokasi.map((lok) => {
           return {
             warna: provinsi.value?.warna ?? 'black',
-            jumlah: lok.jumlah,
+            ...lok,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -194,7 +196,7 @@ const getGeoApi = async function () {
           provinsi.value?.lokasi.map((lok) => {
             return {
               warna: provinsi.value?.warna ?? 'black',
-              jumlah: lok.jumlah,
+              ...lok,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -209,7 +211,7 @@ const getGeoApi = async function () {
         bush.addMarkers(kelurahan.value?.lokasi.map((lok) => {
           return {
             warna: kelurahan.value?.warna ?? 'black',
-            jumlah: lok.jumlah,
+            ...lok,
             lat: Number(lok.lat),
             lng: Number(lok.lng),
           }
@@ -220,7 +222,7 @@ const getGeoApi = async function () {
           kelurahan.value?.lokasi.map((lok) => {
             return {
               warna: kelurahan.value?.warna ?? 'black',
-              jumlah: lok.jumlah,
+              ...lok,
               lat: Number(lok.lat),
               lng: Number(lok.lng),
             }
@@ -236,6 +238,7 @@ const getGeoApi = async function () {
   catch (err) {
     console.log(err)
   }
+  loading.value = false
 }
 
 const onIdle = async function () {
@@ -253,6 +256,12 @@ watch(mapReady, (val) => {
     zoomChanged()
     boundsChanged()
   }
+})
+
+watch(loading, (val) => {
+  map.value?.map?.setOptions({
+    scrollwheel: !val,
+  })
 })
 
 const clusterCss = function (warna: string) {
@@ -361,13 +370,28 @@ const clusterCss = function (warna: string) {
               v-if="type !== 'pelanggan'"
               :options="{ position: latlng }"
             >
-              <div
-                :class="clusterCss('red')"
-              >
-                {{ latlng.jumlah }}
-              </div>
+              <VTooltip :text="latlng.nama" location="top">
+                <template #activator="{ props }">
+                  <div
+                    v-bind="props"
+                    :class="clusterCss('red')"
+                  >
+                    {{ numberUnit(latlng.jumlah ?? 0, 0) }}
+                  </div>
+                </template>
+              </VTooltip>
             </CustomMarker>
-            <Marker v-else :options="{ position: latlng }" />
+            <CustomMarker v-else :options="{ position: latlng }">
+              <div
+                :style="{
+                  width: '10px',
+                  height: '10px',
+                  backgroundColor: 'red',
+                  borderRadius: '50%',
+                  border: '1px solid black',
+                }"
+              />
+            </CustomMarker>
           </template>
         </GoogleMap>
       </div>
