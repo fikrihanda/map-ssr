@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { VApp, VMain, VTooltip } from 'vuetify/components'
-import { CustomMarker, GoogleMap, Marker } from 'vue3-google-map'
+import { CustomMarker, GoogleMap } from 'vue3-google-map'
 import type { LatLgnExtend } from './utils/rbush'
 
 useHead({
@@ -42,6 +42,17 @@ const kabupaten = computedEager(() => geoLoc.getKabupaten)
 const provinsi = computedEager(() => geoLoc.getProvinsi)
 const kelurahan = computedEager(() => geoLoc.getKelurahan)
 const type = computedEager(() => geoLoc.getType)
+const colorChange = computedEager(() => {
+  if (type.value === 'provinsi')
+    return '#d32f2f'
+  if (type.value === 'kabupaten')
+    return '#512da8'
+  if (type.value === 'kecamatan')
+    return '#00796b'
+  if (type.value === 'kelurahan')
+    return '#1976d2'
+  return ''
+})
 
 const markerTreeFun = function () {
   return bush.markerTree.all().map(({ marker }) => marker)
@@ -370,11 +381,11 @@ const clusterCss = function (warna: string) {
               v-if="type !== 'pelanggan'"
               :options="{ position: latlng }"
             >
-              <VTooltip :text="latlng.nama" location="top">
+              <VTooltip :text="`${useCapitalize(type ?? '')}: ${latlng.nama}`" location="top">
                 <template #activator="{ props }">
                   <div
                     v-bind="props"
-                    :class="clusterCss('red')"
+                    :class="clusterCss(colorChange)"
                   >
                     {{ numberUnit(latlng.jumlah ?? 0, 0) }}
                   </div>
