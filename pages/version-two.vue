@@ -21,7 +21,7 @@ const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const markers = ref<LatLgnExtend[]>([])
 const isZoomIn = ref(false)
-const type = ref('')
+const type = ref('provinsi')
 
 const mapAlt = computed(() => {
   if (!map.value)
@@ -65,9 +65,16 @@ const onIdle = function () {
   if (mapAlt.value === null)
     return
 
-  if (mapZoom.value >= 18)
-    return
   if (mapZoom.value >= 16) {
+    if (pelanggan.value) {
+      if (type.value === 'pelanggan') {
+        type.value = 'kelurahan'
+        bush.clear()
+        bush.addMarkers(pelanggan.value.lokasi)
+      }
+    }
+  }
+  else if (mapZoom.value >= 13) {
     if (kelurahan.value) {
       if (type.value === 'kelurahan') {
         type.value = 'kelurahan'
@@ -76,33 +83,28 @@ const onIdle = function () {
       }
     }
   }
-  else if (mapZoom.value >= 13) {
+  else if (mapZoom.value >= 10) {
     if (kecamatan.value) {
-      if (type.value === 'kecamatan') {
-        type.value = 'kecamatan'
-        bush.clear()
-        bush.addMarkers(kecamatan.value.lokasi)
-      }
+      type.value = 'kecamatan'
+      bush.clear()
+      bush.addMarkers(kecamatan.value.lokasi)
     }
   }
-  else if (mapZoom.value >= 11) {
+  else if (mapZoom.value >= 7) {
     if (kabupaten.value) {
-      if (type.value !== 'kabupaten') {
-        type.value = 'kabupaten'
-        bush.clear()
-        bush.addMarkers(kabupaten.value.lokasi)
-      }
+      type.value = 'kabupaten'
+      bush.clear()
+      bush.addMarkers(kabupaten.value.lokasi)
     }
   }
   else {
     if (provinsi.value) {
-      if (type.value !== 'provinsi') {
-        type.value = 'provinsi'
-        bush.clear()
-        bush.addMarkers(provinsi.value.lokasi)
-      }
+      type.value = 'provinsi'
+      bush.clear()
+      bush.addMarkers(provinsi.value.lokasi)
     }
   }
+
   bush._redraw()
   markers.value = markerTreeFun()
 }
@@ -156,14 +158,31 @@ const clickGeo = async function (ll: LatLgnExtend) {
     })
     map.value.map.setCenter(usePick(ll, ['lat', 'lng']))
     const findIndex = typeCheck.findIndex(v => v === type.value)
-    const zm = zoomCheck[findIndex - 1]
     const ty = typeCheck[findIndex - 1]
     type.value = ty
     if (type.value === 'kabupaten') {
       bush.clear()
       bush.addMarkers(kabupaten.value?.lokasi ?? [])
     }
-    map.value.map.setZoom(zm)
+    if (type.value === 'kecamatan') {
+      bush.clear()
+      bush.addMarkers(kecamatan.value?.lokasi ?? [])
+    }
+    if (type.value === 'kelurahan') {
+      bush.clear()
+      bush.addMarkers(kelurahan.value?.lokasi ?? [])
+    }
+    if (type.value === 'pelanggan') {
+      bush.clear()
+      bush.addMarkers(pelanggan.value?.lokasi ?? [])
+    }
+    const all = markerTreeFun()
+    const bounds = new google.maps.LatLngBounds()
+    all.forEach((marker) => {
+      bounds.extend(marker)
+    })
+    map.value.map.fitBounds(bounds)
+    console.log(map.value.map.getZoom())
   }
   catch (err) {}
 }
@@ -172,6 +191,19 @@ watch(mapZoom, (cur, prev) => {
   if (cur === null || prev === null)
     return
   isZoomIn.value = cur > prev
+})
+
+watch(pending, (val) => {
+  if (!val) {
+    bush.clear()
+    bush.addMarkers(provinsi.value?.lokasi ?? [])
+    const all = markerTreeFun()
+    const bounds = new google.maps.LatLngBounds()
+    all.forEach((marker) => {
+      bounds.extend(marker)
+    })
+    map.value?.map?.fitBounds(bounds)
+  }
 })
 
 watch(mapReady, (val) => {
