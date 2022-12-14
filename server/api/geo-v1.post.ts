@@ -3,8 +3,7 @@ import { parseData } from '~~/server/utils/parse-response'
 export default defineEventHandler(async (event) => {
   const { token } = useRuntimeConfig()
   const body = await readBody<{
-    altitude: string
-    list: string
+    idWilayah: string
   }>(event)
 
   const res = await $fetch<{
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
     }
     success: boolean
     message: string
-  }>('https://rcrmdev.iconpln.co.id/icrm-be-backoffice-dev/geo/latlon/lihat', {
+  }>('https://rcrmdev.iconpln.co.id/icrm-be-backoffice-dev/geo/latlon/lihat/V1', {
     method: 'POST',
     body,
     headers: {
@@ -36,6 +35,7 @@ export default defineEventHandler(async (event) => {
   }
   const [layer, warna] = res.data.Data2.split('@@')
   const parse = parseData(res.data.Data3, [
+    'id',
     'lat',
     'lng',
     'nama',
