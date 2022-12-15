@@ -4,7 +4,6 @@ export const parseData = function<R = any> (stringBody: string, keys: (keyof R)[
     const re = {} as R
     for (const [i, cur] of curSplit.entries()) {
       const key = keys[i]
-      console.log(key)
       if (key === 'lat' || key === 'lng')
         re[key] = parseFloat(cur) as any
       else

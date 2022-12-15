@@ -15,7 +15,6 @@ const { pending } = useAsyncData(async () => await geo.getGeo({
   lazy: true,
 })
 
-const zoomCheck = [18, 16, 13, 11, 0]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
@@ -42,6 +41,17 @@ const kecamatan = computed(() => geo.getGeoKecamatan)
 const kabupaten = computed(() => geo.getGeoKabupaten)
 const provinsi = computed(() => geo.getGeoPronvisi)
 const kelurahan = computed(() => geo.getGeoKelurahan)
+const colorChange = computedEager(() => {
+  if (type.value === 'provinsi')
+    return '#d32f2f'
+  if (type.value === 'kabupaten')
+    return '#512da8'
+  if (type.value === 'kecamatan')
+    return '#00796b'
+  if (type.value === 'kelurahan')
+    return '#1976d2'
+  return ''
+})
 
 const bush = new BushMarker()
 
@@ -67,20 +77,16 @@ const onIdle = function () {
 
   if (mapZoom.value >= 16) {
     if (pelanggan.value) {
-      if (type.value === 'pelanggan') {
-        type.value = 'kelurahan'
-        bush.clear()
-        bush.addMarkers(pelanggan.value.lokasi)
-      }
+      type.value = 'pelanggan'
+      bush.clear()
+      bush.addMarkers(pelanggan.value.lokasi)
     }
   }
   else if (mapZoom.value >= 13) {
     if (kelurahan.value) {
-      if (type.value === 'kelurahan') {
-        type.value = 'kelurahan'
-        bush.clear()
-        bush.addMarkers(kelurahan.value.lokasi)
-      }
+      type.value = 'kelurahan'
+      bush.clear()
+      bush.addMarkers(kelurahan.value.lokasi)
     }
   }
   else if (mapZoom.value >= 10) {
@@ -109,7 +115,7 @@ const onIdle = function () {
   markers.value = markerTreeFun()
 }
 
-const clusterCss = function () {
+const clusterCss = function (warna: string) {
   return useCss({
     'position': 'relative',
     'display': 'flex',
@@ -118,7 +124,7 @@ const clusterCss = function () {
     'width': '35px',
     'height': '35px',
     'borderRadius': '50%',
-    'backgroundColor': 'red',
+    'backgroundColor': warna,
     'transition': 'width height 2s',
     'cursor': 'pointer',
     'color': 'white',
@@ -130,7 +136,7 @@ const clusterCss = function () {
       top: '50%',
       left: '50%',
       borderRadius: '50%',
-      backgroundColor: 'red',
+      backgroundColor: warna,
     },
     '&:before': {
       width: '40px',
@@ -182,7 +188,6 @@ const clickGeo = async function (ll: LatLgnExtend) {
       bounds.extend(marker)
     })
     map.value.map.fitBounds(bounds)
-    console.log(map.value.map.getZoom())
   }
   catch (err) {}
 }
@@ -243,18 +248,32 @@ watch(mapReady, (val) => {
       @zoom_changed="zoomChanged"
       @idle="onIdle"
     >
-      <CustomMarker
-        v-for="(latlng, i) in markers" :key="i"
-        :options="{ position: latlng }"
-      >
-        <div
-          :id="`marker-${i}`"
-          :class="clusterCss()"
-          @click="clickGeo(latlng)"
+      <template v-for="(latlng, i) in markers" :key="i">
+        <CustomMarker
+          v-if="type !== 'pelanggan'"
+          :options="{ position: latlng }"
         >
-          {{ numberUnit(latlng.jumlah ?? 0, 0) }}
-        </div>
-      </CustomMarker>
+          <div
+            :id="`marker-${i}`"
+            :class="clusterCss(colorChange)"
+            @click="clickGeo(latlng)"
+          >
+            {{ numberUnit(latlng.jumlah ?? 0, 0) }}
+          </div>
+        </CustomMarker>
+        <CustomMarker v-else :options="{ position: latlng }">
+          <div
+            :style="{
+              width: '10px',
+              height: '10px',
+              backgroundColor: 'red',
+              borderRadius: '50%',
+              border: '1px solid black',
+              cursor: 'pointer',
+            }"
+          />
+        </CustomMarker>
+      </template>
     </GoogleMap>
   </div>
 </template>
