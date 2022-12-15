@@ -14,13 +14,14 @@ const { pending } = useAsyncData(async () => await geo.getGeo({
 }), {
   lazy: true,
 })
-
+const zoomCheck = [16, 13, 10, 7, 5]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
 const markers = ref<LatLgnExtend[]>([])
-const isZoomIn = ref(false)
+const isZoomOut = ref(false)
 const type = ref('provinsi')
+const isFirst = ref(true)
 
 const mapAlt = computed(() => {
   if (!map.value)
@@ -75,6 +76,18 @@ const onIdle = function () {
   if (mapAlt.value === null)
     return
 
+  if (isFirst.value) {
+    bush.clear()
+    bush.addMarkers(provinsi.value?.lokasi ?? [])
+    const all = markerTreeFun()
+    const bounds = new google.maps.LatLngBounds()
+    all.forEach((marker) => {
+      bounds.extend(marker)
+    })
+    map.value?.map?.fitBounds(bounds)
+    isFirst.value = false
+  }
+
   if (mapZoom.value >= 16) {
     if (pelanggan.value) {
       type.value = 'pelanggan'
@@ -109,6 +122,17 @@ const onIdle = function () {
       bush.clear()
       bush.addMarkers(provinsi.value.lokasi)
     }
+  }
+
+  if (isZoomOut.value) {
+    if (type.value === 'provinsi')
+      geo.removeGeo(['kabupaten', 'kecamatan', 'kelurahan', 'pelanggan'])
+    if (type.value === 'kabupaten')
+      geo.removeGeo(['kecamatan', 'kelurahan', 'pelanggan'])
+    if (type.value === 'kecamatan')
+      geo.removeGeo(['kelurahan', 'pelanggan'])
+    if (type.value === 'kelurahan')
+      geo.removeGeo(['pelanggan'])
   }
 
   bush._redraw()
@@ -187,7 +211,14 @@ const clickGeo = async function (ll: LatLgnExtend) {
     all.forEach((marker) => {
       bounds.extend(marker)
     })
-    map.value.map.fitBounds(bounds)
+    const center = bounds.getCenter()
+    map.value.map.setCenter(center)
+    if (type.value !== 'provinsi') {
+      console.log(type.value)
+      const checkZoom = zoomCheck[findIndex - 1]
+      console.log(checkZoom)
+      map.value.map.setZoom(checkZoom + 1)
+    }
   }
   catch (err) {}
 }
@@ -195,20 +226,7 @@ const clickGeo = async function (ll: LatLgnExtend) {
 watch(mapZoom, (cur, prev) => {
   if (cur === null || prev === null)
     return
-  isZoomIn.value = cur > prev
-})
-
-watch(pending, (val) => {
-  if (!val) {
-    bush.clear()
-    bush.addMarkers(provinsi.value?.lokasi ?? [])
-    const all = markerTreeFun()
-    const bounds = new google.maps.LatLngBounds()
-    all.forEach((marker) => {
-      bounds.extend(marker)
-    })
-    map.value?.map?.fitBounds(bounds)
-  }
+  isZoomOut.value = cur < prev
 })
 
 watch(mapReady, (val) => {

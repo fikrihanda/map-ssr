@@ -40,6 +40,11 @@ export const useGeoLocV1 = defineStore('GeoLocV1', {
     },
   },
   actions: {
+    removeGeo(datas: string[]) {
+      datas.forEach((dt) => {
+        this[`geo${useCapitalize(dt)}` as 'geoProvinsi' | 'geoKabupaten' | 'geoKecamatan' | 'geoKelurahan' | 'geoPelanggan'] = null
+      })
+    },
     async getGeo(data: { idWilayah: string }) {
       if (this.isHit)
         return
