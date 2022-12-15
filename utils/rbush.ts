@@ -25,6 +25,10 @@ export class BushMarker {
     return this._markersTree
   }
 
+  get markers() {
+    return this._markers
+  }
+
   addMap(map: google.maps.Map) {
     this._map = map
   }
