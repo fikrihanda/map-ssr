@@ -319,7 +319,7 @@ watch(mapReady, (val) => {
         </VCardSubtitle>
         <VCardItem>
           <VBtn block density="compact" color="primary" @click="clickGeo(selected as LatLgnExtend)">
-            Pilih
+            Click Here
           </VBtn>
         </VCardItem>
       </VCard>
