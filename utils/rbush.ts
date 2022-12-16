@@ -58,6 +58,21 @@ export class BushMarker {
     this._positionsTree.load(positionBoxes)
   }
 
+  addMarkersToAllAdd(markers: LatLgnExtend[]) {
+    const markerBoxes = [] as Box[]
+    const positionBoxes = [] as Box[]
+
+    markers.forEach((marker) => {
+      const { markerBox, positionBox } = this._addMarker(marker)
+      markerBoxes.push(markerBox as Box)
+
+      positionBoxes.push(positionBox as Box)
+    })
+
+    this._markersTree.load(markerBoxes)
+    this._positionsTree.load(positionBoxes)
+  }
+
   clear() {
     this._positionsTree = new RBush()
     this._markersTree = new RBush()

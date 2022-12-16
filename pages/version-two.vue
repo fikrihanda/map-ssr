@@ -10,7 +10,7 @@ useHead({
 const config = useRuntimeConfig()
 const geo = useGeoLocV1()
 
-const zoomCheck = [15, 12, 10, 8, 5]
+const zoomCheck = [14, 11, 9, 7, 5]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
@@ -80,8 +80,8 @@ const onIdle = async function () {
       idWilayah: '',
     })
     bush.clear()
-    bush.addMarkers(provinsi.value?.lokasi ?? [])
-    bush._redraw()
+    bush.addMarkersToAllAdd(provinsi.value?.lokasi ?? [])
+
     markers.value = markerTreeFun()
     isFirst.value = false
   }
@@ -90,35 +90,35 @@ const onIdle = async function () {
     if (pelanggan.value) {
       type.value = 'pelanggan'
       bush.clear()
-      bush.addMarkers(pelanggan.value.lokasi)
+      bush.addMarkersToAllAdd(pelanggan.value.lokasi)
     }
   }
   else if (mapZoom.value >= zoomCheck[1]) {
     if (kelurahan.value) {
       type.value = 'kelurahan'
       bush.clear()
-      bush.addMarkers(kelurahan.value.lokasi)
+      bush.addMarkersToAllAdd(kelurahan.value.lokasi)
     }
   }
   else if (mapZoom.value >= zoomCheck[2]) {
     if (kecamatan.value) {
       type.value = 'kecamatan'
       bush.clear()
-      bush.addMarkers(kecamatan.value.lokasi)
+      bush.addMarkersToAllAdd(kecamatan.value.lokasi)
     }
   }
   else if (mapZoom.value >= zoomCheck[3]) {
     if (kabupaten.value) {
       type.value = 'kabupaten'
       bush.clear()
-      bush.addMarkers(kabupaten.value.lokasi)
+      bush.addMarkersToAllAdd(kabupaten.value.lokasi)
     }
   }
   else {
     if (provinsi.value) {
       type.value = 'provinsi'
       bush.clear()
-      bush.addMarkers(provinsi.value.lokasi)
+      bush.addMarkersToAllAdd(provinsi.value.lokasi)
     }
   }
 
@@ -133,7 +133,6 @@ const onIdle = async function () {
       geo.removeGeo(['pelanggan'])
   }
 
-  bush._redraw()
   markers.value = markerTreeFun()
 }
 
@@ -200,19 +199,19 @@ const clickGeo = async function (ll: LatLgnExtend) {
     type.value = ty
     if (type.value === 'kabupaten') {
       bush.clear()
-      bush.addMarkers(kabupaten.value?.lokasi ?? [])
+      bush.addMarkersToAllAdd(kabupaten.value?.lokasi ?? [])
     }
     if (type.value === 'kecamatan') {
       bush.clear()
-      bush.addMarkers(kecamatan.value?.lokasi ?? [])
+      bush.addMarkersToAllAdd(kecamatan.value?.lokasi ?? [])
     }
     if (type.value === 'kelurahan') {
       bush.clear()
-      bush.addMarkers(kelurahan.value?.lokasi ?? [])
+      bush.addMarkersToAllAdd(kelurahan.value?.lokasi ?? [])
     }
     if (type.value === 'pelanggan') {
       bush.clear()
-      bush.addMarkers(pelanggan.value?.lokasi ?? [])
+      bush.addMarkersToAllAdd(pelanggan.value?.lokasi ?? [])
     }
     const all = bush.markers
     const bounds = new google.maps.LatLngBounds()
@@ -285,6 +284,7 @@ watch(mapReady, (val) => {
           :id="`marker-${latlng.id}`"
           :options="{ position: latlng }"
           @mouseenter="setSelected(latlng)"
+          @mouseleav="removeSelected"
         >
           <div
             :class="clusterCss(colorChange)"
@@ -293,7 +293,11 @@ watch(mapReady, (val) => {
           </div>
         </CustomMarker>
         <CustomMarker v-else :id="`marker-${latlng.id}`" :options="{ position: latlng }">
-          <img src="~~/assets/images/pelanggan.png">
+          <img
+            src="~~/assets/images/pelanggan.png"
+            @mouseenter="setSelected(latlng)"
+            @mouseleav="removeSelected"
+          >
         </CustomMarker>
       </template>
     </GoogleMap>
