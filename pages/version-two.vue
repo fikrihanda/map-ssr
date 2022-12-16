@@ -301,15 +301,13 @@ watch(mapReady, (val) => {
           </div>
         </CustomMarker>
       </template>
-      <MarkerCluster>
-        <template v-for="(latlng, i) in markers" :key="i">
-          <Marker
-            v-if="type === 'pelanggan'" :id="`marker-${latlng.id}`"
-            :options="{ position: latlng, icon: PelangganSvg }"
-            @click="setSelected(latlng)"
-          />
-        </template>
-      </MarkerCluster>
+      <template v-for="(latlng, i) in markers" :key="i">
+        <Marker
+          v-if="type === 'pelanggan'" :id="`marker-${latlng.id}`"
+          :options="{ position: latlng, icon: createMarker(35, 35, 4) }"
+          @click="setSelected(latlng)"
+        />
+      </template>
       <InfoWindow
         v-if="menuOpen" :options="{
           position: selected,

@@ -72,3 +72,36 @@ export const getBoundsZoomLevel = function (bounds: google.maps.LatLngBounds, ma
 
   return Math.min(latZoom, lngZoom, ZOOM_MAX)
 }
+
+export const createMarker = function (width: number, height: number, radius: number) {
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+
+  const context = canvas.getContext('2d') as CanvasRenderingContext2D
+
+  context.clearRect(0, 0, width, height)
+
+  // background is yellow
+  context.fillStyle = 'rgba(255,255,0,1)'
+
+  // border is black
+  context.strokeStyle = 'rgba(0,0,0,1)'
+
+  context.beginPath()
+  context.moveTo(radius, 0)
+  context.lineTo(width - radius, 0)
+  context.quadraticCurveTo(width, 0, width, radius)
+  context.lineTo(width, height - radius)
+  context.quadraticCurveTo(width, height, width - radius, height)
+  context.lineTo(radius, height)
+  context.quadraticCurveTo(0, height, 0, height - radius)
+  context.lineTo(0, radius)
+  context.quadraticCurveTo(0, 0, radius, 0)
+  context.closePath()
+
+  context.fill()
+  context.stroke()
+
+  return canvas.toDataURL()
+}
