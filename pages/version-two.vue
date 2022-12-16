@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { info } from 'console'
 import { VBtn, VCard, VCardItem, VCardSubtitle, VMenu } from 'vuetify/components'
-import { CustomMarker, GoogleMap, Marker } from 'vue3-google-map'
+import { CustomMarker, GoogleMap, InfoWindow, Marker, MarkerCluster } from 'vue3-google-map'
 import { LatLgnExtend } from '~~/utils/rbush'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -16,6 +17,7 @@ const geo = useGeoLocV1()
 const zoomCheck = [14, 11, 9, 7, 5]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
+const infoWindow = ref<InstanceType<typeof InfoWindow> | null>(null)
 const mapZoom = ref<number | null>(null)
 const markers = ref<LatLgnExtend[]>([])
 const isZoomOut = ref(false)
@@ -43,6 +45,7 @@ const kecamatan = computed(() => geo.getGeoKecamatan)
 const kabupaten = computed(() => geo.getGeoKabupaten)
 const provinsi = computed(() => geo.getGeoPronvisi)
 const kelurahan = computed(() => geo.getGeoKelurahan)
+const gm = computed(() => google.maps)
 const colorChange = computedEager(() => {
   if (type.value === 'provinsi')
     return '#d32f2f'
@@ -189,6 +192,9 @@ const clusterCss = function (warna: string) {
 const setSelected = function (ll: LatLgnExtend) {
   selected.value = ll
   menuOpen.value = true
+  return (e: any) => {
+    console.log(e)
+  }
 }
 
 const removeSelected = function () {
@@ -205,7 +211,6 @@ const clickGeo = async function (ll: LatLgnExtend) {
     await geo.getGeoToGeo({
       idWilayah: ll.id as string,
     })
-    map.value.map.setCenter(usePick(ll, ['lat', 'lng']))
     const findIndex = typeCheck.findIndex(v => v === type.value)
     const ty = typeCheck[findIndex - 1]
     type.value = ty
@@ -287,7 +292,7 @@ watch(mapReady, (val) => {
           v-if="type !== 'pelanggan'"
           :id="`marker-${latlng.id}`"
           :options="{ position: latlng }"
-          @mouseenter="setSelected(latlng)"
+          @click="setSelected(latlng)"
         >
           <div
             :class="clusterCss(colorChange)"
@@ -295,15 +300,41 @@ watch(mapReady, (val) => {
             {{ latlng.jumlah ?? 0 }}
           </div>
         </CustomMarker>
-        <Marker
-          v-else :id="`marker-${latlng.id}`"
-          :options="{ position: latlng, icon: PelangganSvg }"
-          @mouseover="setSelected(latlng)"
-        />
       </template>
+      <MarkerCluster>
+        <template v-for="(latlng, i) in markers" :key="i">
+          <Marker
+            v-if="type === 'pelanggan'" :id="`marker-${latlng.id}`"
+            :options="{ position: latlng, icon: PelangganSvg }"
+            @click="setSelected(latlng)"
+          />
+        </template>
+      </MarkerCluster>
+      <InfoWindow
+        v-if="menuOpen" :options="{
+          position: selected,
+          pixelOffset: new gm.Size(0, type === 'pelanggan' ? -35 : -22.5),
+        }" @closeclick="removeSelected"
+      >
+        <div class="pb-2">
+          {{ selected?.nama?.toUpperCase() ?? '' }}
+        </div>
+        <div class="">
+          <VBtn
+            :class="useCss({
+              textTransform: 'capitalize',
+            })"
+            block
+            density="compact"
+            color="primary"
+            @click="clickGeo(selected as LatLgnExtend)"
+          >
+            Click Here
+          </VBtn>
+        </div>
+      </InfoWindow>
     </GoogleMap>
-    <VMenu
-      v-if="selected"
+    <!-- <VMenu
       v-model="menuOpen"
       :activator="`#marker-${selected?.id ?? 0}`"
       :close-on-back="false"
@@ -336,6 +367,6 @@ watch(mapReady, (val) => {
           </VBtn>
         </VCardItem>
       </VCard>
-    </VMenu>
+    </VMenu> -->
   </div>
 </template>

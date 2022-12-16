@@ -115,6 +115,7 @@ export const useGeoLocV1 = defineStore('GeoLocV1', {
       this.isHit = true
       try {
         const res = await this.getGeoLocal(data)
+        console.log(res)
         if (res.layer === '5')
           this.geoProvinsi = res
 
