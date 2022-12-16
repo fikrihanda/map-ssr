@@ -11,6 +11,7 @@ export default defineNuxtConfig({
       },
     ],
     'nuxt-lodash',
+    'nuxt-svgo',
     '~/modules/vuetify',
   ],
   runtimeConfig: {

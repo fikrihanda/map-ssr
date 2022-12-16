@@ -2,6 +2,9 @@
 import { VBtn, VCard, VCardItem, VCardSubtitle, VMenu } from 'vuetify/components'
 import { CustomMarker, GoogleMap } from 'vue3-google-map'
 import { LatLgnExtend } from '~~/utils/rbush'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import PelangganSvg from '~~/assets/images/blue.svg'
 
 useHead({
   title: 'Map: Versi 2',
@@ -83,6 +86,11 @@ const onIdle = async function () {
     bush.addMarkersToAllAdd(provinsi.value?.lokasi ?? [])
 
     markers.value = markerTreeFun()
+    const bounds = new google.maps.LatLngBounds()
+    markers.value.forEach((marker) => {
+      bounds.extend(marker)
+    })
+    map.value.map.fitBounds(bounds)
     isFirst.value = false
   }
 
@@ -220,16 +228,8 @@ const clickGeo = async function (ll: LatLgnExtend) {
     })
     const center = bounds.getCenter()
     map.value.map.setCenter(center)
-    if (type.value !== 'provinsi') {
-      // const zoomLevel = getBoundsZoomLevel(bounds, {
-      //   height: innerHeight,
-      //   width: innerWidth,
-      // })
-      // const checkZoom = zoomCheck[findIndex - 1]
-      // console.log(zoomLevel, checkZoom, zoomLevel < checkZoom)
-      // map.value.map.setZoom(checkZoom + 0.5)
+    if (type.value !== 'provinsi')
       map.value.map.fitBounds(bounds)
-    }
   }
   catch (err) {}
   menuOpen.value = false
@@ -289,15 +289,14 @@ watch(mapReady, (val) => {
           <div
             :class="clusterCss(colorChange)"
           >
-            {{ numberUnit(latlng.jumlah ?? 0, 0) }}
+            {{ numberUnit(latlng.jumlah ?? 0, 1) }}
           </div>
         </CustomMarker>
         <CustomMarker v-else :id="`marker-${latlng.id}`" :options="{ position: latlng }">
-          <img
-            src="~~/assets/images/pelanggan.png"
+          <PelangganSvg
             @mouseenter="setSelected(latlng)"
             @mouseleav="removeSelected"
-          >
+          />
         </CustomMarker>
       </template>
     </GoogleMap>
@@ -322,7 +321,15 @@ watch(mapReady, (val) => {
           {{ selected?.nama?.toUpperCase() }}
         </VCardSubtitle>
         <VCardItem>
-          <VBtn block density="compact" color="primary" @click="clickGeo(selected as LatLgnExtend)">
+          <VBtn
+            :class="useCss({
+              textTransform: 'capitalize',
+            })"
+            block
+            density="compact"
+            color="primary"
+            @click="clickGeo(selected as LatLgnExtend)"
+          >
             Click Here
           </VBtn>
         </VCardItem>
