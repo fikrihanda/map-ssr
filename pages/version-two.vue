@@ -10,11 +10,6 @@ useHead({
 const config = useRuntimeConfig()
 const geo = useGeoLocV1()
 
-const { pending } = useAsyncData(async () => await geo.getGeo({
-  idWilayah: '',
-}), {
-  lazy: true,
-})
 const zoomCheck = [16, 13, 10, 7, 5]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
@@ -68,7 +63,7 @@ const markerTreeFun = function () {
   return mapa
 }
 
-const onIdle = function () {
+const onIdle = async function () {
   if (!map.value)
     return
   if (!map.value.map)
@@ -80,8 +75,13 @@ const onIdle = function () {
     return
 
   if (isFirst.value) {
+    await geo.getGeo({
+      idWilayah: '',
+    })
     bush.clear()
     bush.addMarkers(provinsi.value?.lokasi ?? [])
+    bush._redraw()
+    markers.value = markerTreeFun()
     isFirst.value = false
   }
 
@@ -213,7 +213,7 @@ const clickGeo = async function (ll: LatLgnExtend) {
       bush.clear()
       bush.addMarkers(pelanggan.value?.lokasi ?? [])
     }
-    const all = markerTreeFun()
+    const all = bush.markers
     const bounds = new google.maps.LatLngBounds()
     all.forEach((marker) => {
       bounds.extend(marker)
@@ -222,7 +222,7 @@ const clickGeo = async function (ll: LatLgnExtend) {
     map.value.map.setCenter(center)
     if (type.value !== 'provinsi') {
       const checkZoom = zoomCheck[findIndex - 1]
-      map.value.map.setZoom(checkZoom + 1)
+      map.value.map.setZoom(checkZoom + 0.5)
     }
   }
   catch (err) {}
@@ -300,7 +300,7 @@ watch(mapReady, (val) => {
       </template>
     </GoogleMap>
     <VMenu
-      v-if="menuOpen"
+      v-if="selected"
       v-model="menuOpen"
       :activator="`#marker-${selected?.id ?? 0}`"
       :close-on-back="false"
