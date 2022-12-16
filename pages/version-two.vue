@@ -10,7 +10,7 @@ useHead({
 const config = useRuntimeConfig()
 const geo = useGeoLocV1()
 
-const zoomCheck = [16, 13, 10, 7, 5]
+const zoomCheck = [15, 12, 10, 8, 5]
 const typeCheck = ['pelanggan', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi']
 const map = ref<InstanceType<typeof GoogleMap> | null>(null)
 const mapZoom = ref<number | null>(null)
@@ -56,6 +56,7 @@ const bush = new BushMarker()
 
 const zoomChanged = function () {
   mapZoom.value = map.value?.map?.getZoom() ?? null
+  console.log(mapZoom.value)
 }
 
 const markerTreeFun = function () {
@@ -85,28 +86,28 @@ const onIdle = async function () {
     isFirst.value = false
   }
 
-  if (mapZoom.value >= 16) {
+  if (mapZoom.value >= zoomCheck[0]) {
     if (pelanggan.value) {
       type.value = 'pelanggan'
       bush.clear()
       bush.addMarkers(pelanggan.value.lokasi)
     }
   }
-  else if (mapZoom.value >= 13) {
+  else if (mapZoom.value >= zoomCheck[1]) {
     if (kelurahan.value) {
       type.value = 'kelurahan'
       bush.clear()
       bush.addMarkers(kelurahan.value.lokasi)
     }
   }
-  else if (mapZoom.value >= 10) {
+  else if (mapZoom.value >= zoomCheck[2]) {
     if (kecamatan.value) {
       type.value = 'kecamatan'
       bush.clear()
       bush.addMarkers(kecamatan.value.lokasi)
     }
   }
-  else if (mapZoom.value >= 7) {
+  else if (mapZoom.value >= zoomCheck[3]) {
     if (kabupaten.value) {
       type.value = 'kabupaten'
       bush.clear()
@@ -221,8 +222,14 @@ const clickGeo = async function (ll: LatLgnExtend) {
     const center = bounds.getCenter()
     map.value.map.setCenter(center)
     if (type.value !== 'provinsi') {
-      const checkZoom = zoomCheck[findIndex - 1]
-      map.value.map.setZoom(checkZoom + 0.5)
+      // const zoomLevel = getBoundsZoomLevel(bounds, {
+      //   height: innerHeight,
+      //   width: innerWidth,
+      // })
+      // const checkZoom = zoomCheck[findIndex - 1]
+      // console.log(zoomLevel, checkZoom, zoomLevel < checkZoom)
+      // map.value.map.setZoom(checkZoom + 0.5)
+      map.value.map.fitBounds(bounds)
     }
   }
   catch (err) {}
