@@ -293,16 +293,7 @@ watch(mapReady, (val) => {
           </div>
         </CustomMarker>
         <CustomMarker v-else :id="`marker-${latlng.id}`" :options="{ position: latlng }">
-          <div
-            :style="{
-              width: '10px',
-              height: '10px',
-              backgroundColor: 'red',
-              borderRadius: '50%',
-              border: '1px solid black',
-              cursor: 'pointer',
-            }"
-          />
+          <img src="~~/assets/images/pelanggan.png">
         </CustomMarker>
       </template>
     </GoogleMap>
