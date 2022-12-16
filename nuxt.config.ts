@@ -11,13 +11,13 @@ export default defineNuxtConfig({
       },
     ],
     'nuxt-lodash',
-    'nuxt-svgo',
     '~/modules/vuetify',
   ],
   runtimeConfig: {
     token: process.env.TOKEN,
     public: {
       mapKey: process.env.MAP_KEY,
+      token: process.env.TOKEN,
     },
   },
   imports: {

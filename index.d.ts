@@ -5,6 +5,7 @@ declare module '@nuxt/schema' {
     public: {
       apiBase: string
       mapKey: string
+      token: string
     }
   }
 }

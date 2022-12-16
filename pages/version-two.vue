@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { VBtn, VCard, VCardItem, VCardSubtitle, VMenu } from 'vuetify/components'
-import { CustomMarker, GoogleMap } from 'vue3-google-map'
+import { CustomMarker, GoogleMap, Marker } from 'vue3-google-map'
 import { LatLgnExtend } from '~~/utils/rbush'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -59,7 +59,6 @@ const bush = new BushMarker()
 
 const zoomChanged = function () {
   mapZoom.value = map.value?.map?.getZoom() ?? null
-  console.log(mapZoom.value)
 }
 
 const markerTreeFun = function () {
@@ -79,19 +78,24 @@ const onIdle = async function () {
     return
 
   if (isFirst.value) {
-    await geo.getGeo({
-      idWilayah: '',
-    })
-    bush.clear()
-    bush.addMarkersToAllAdd(provinsi.value?.lokasi ?? [])
+    try {
+      await geo.getGeoToGeo({
+        idWilayah: '',
+      })
+      bush.clear()
+      bush.addMarkersToAllAdd(provinsi.value?.lokasi ?? [])
 
-    markers.value = markerTreeFun()
-    const bounds = new google.maps.LatLngBounds()
-    markers.value.forEach((marker) => {
-      bounds.extend(marker)
-    })
-    map.value.map.fitBounds(bounds)
-    isFirst.value = false
+      markers.value = markerTreeFun()
+      const bounds = new google.maps.LatLngBounds()
+      markers.value.forEach((marker) => {
+        bounds.extend(marker)
+      })
+      map.value.map.fitBounds(bounds)
+      isFirst.value = false
+    }
+    catch (err) {
+      console.log(err)
+    }
   }
 
   if (mapZoom.value >= zoomCheck[0]) {
@@ -198,7 +202,7 @@ const clickGeo = async function (ll: LatLgnExtend) {
   if (!map.value.map)
     return
   try {
-    await geo.getGeo({
+    await geo.getGeoToGeo({
       idWilayah: ll.id as string,
     })
     map.value.map.setCenter(usePick(ll, ['lat', 'lng']))
@@ -284,20 +288,18 @@ watch(mapReady, (val) => {
           :id="`marker-${latlng.id}`"
           :options="{ position: latlng }"
           @mouseenter="setSelected(latlng)"
-          @mouseleav="removeSelected"
         >
           <div
             :class="clusterCss(colorChange)"
           >
-            {{ numberUnit(latlng.jumlah ?? 0, 1) }}
+            {{ latlng.jumlah ?? 0 }}
           </div>
         </CustomMarker>
-        <CustomMarker v-else :id="`marker-${latlng.id}`" :options="{ position: latlng }">
-          <PelangganSvg
-            @mouseenter="setSelected(latlng)"
-            @mouseleav="removeSelected"
-          />
-        </CustomMarker>
+        <Marker
+          v-else :id="`marker-${latlng.id}`"
+          :options="{ position: latlng, icon: PelangganSvg }"
+          @mouseover="setSelected(latlng)"
+        />
       </template>
     </GoogleMap>
     <VMenu
@@ -308,7 +310,7 @@ watch(mapReady, (val) => {
       :close-on-content-click="false"
       :open-on-hover="true"
       z-index="2022"
-      location="bottom center"
+      location="top center"
     >
       <VCard :min-width="100">
         <VCardSubtitle
@@ -320,7 +322,7 @@ watch(mapReady, (val) => {
         >
           {{ selected?.nama?.toUpperCase() }}
         </VCardSubtitle>
-        <VCardItem>
+        <VCardItem v-if="type !== 'pelanggan'">
           <VBtn
             :class="useCss({
               textTransform: 'capitalize',

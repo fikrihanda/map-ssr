@@ -14,6 +14,8 @@ export interface SelectedGeo {
   type: 'provinsi' | 'kabupaten' | 'kecamatan' | 'kelurahan'
 }
 
+const config = useRuntimeConfig()
+
 export const useGeoLocV1 = defineStore('GeoLocV1', {
   state: () => ({
     isHit: false,
@@ -105,6 +107,108 @@ export const useGeoLocV1 = defineStore('GeoLocV1', {
       catch (err) {
         this.isHit = false
         return Promise.reject(err)
+      }
+    },
+    async getGeoToGeo(data: { idWilayah: string }) {
+      if (this.isHit)
+        return
+      this.isHit = true
+      try {
+        const res = await this.getGeoLocal(data)
+        if (res.layer === '5')
+          this.geoProvinsi = res
+
+        if (res.layer === '4') {
+          const isOn = this.findSelecteds('provinsi')
+          if (!isOn) {
+            this.selecteds.push({
+              id: data.idWilayah,
+              type: 'provinsi',
+            })
+          }
+          this.geoKabupaten = res
+        }
+        if (res.layer === '3') {
+          const isOn = this.findSelecteds('kabupaten')
+          if (!isOn) {
+            this.selecteds.push({
+              id: data.idWilayah,
+              type: 'kabupaten',
+            })
+          }
+          this.geoKecamatan = res
+        }
+
+        if (res.layer === '2') {
+          const isOn = this.findSelecteds('kecamatan')
+          if (!isOn) {
+            this.selecteds.push({
+              id: data.idWilayah,
+              type: 'kecamatan',
+            })
+          }
+          this.geoKelurahan = res
+        }
+
+        if (res.layer === '1') {
+          const isOn = this.findSelecteds('kelurahan')
+          if (!isOn) {
+            this.selecteds.push({
+              id: data.idWilayah,
+              type: 'kelurahan',
+            })
+          }
+          this.geoPelanggan = res
+        }
+        this.isHit = false
+        return {}
+      }
+      catch (err) {
+        this.isHit = false
+        return Promise.reject(err)
+      }
+    },
+    async getGeoLocal(data: { idWilayah: string }) {
+      const res = await $fetch<{
+        data: {
+          Data1: string
+          Data2: string
+          Data3: string
+        }
+        success: boolean
+        message: string
+      }>('https://rcrmdev.iconpln.co.id/icrm-be-backoffice-dev/geo/latlon/lihat/V1', {
+        method: 'POST',
+        body: data,
+        headers: {
+          Authorization: `Bearer ${config.public.token}`,
+        },
+      })
+      if (!res.success) {
+        return Promise.reject(createError({
+          message: res.message,
+          statusMessage: res.message,
+        }))
+      }
+      if (res.data.Data1 !== '') {
+        return Promise.reject(createError({
+          message: res.data.Data1,
+          statusMessage: res.data.Data1,
+        }))
+      }
+      const [layer, warna] = res.data.Data2.split('@@')
+      const parse = parseData(res.data.Data3, [
+        'id',
+        'lat',
+        'lng',
+        'nama',
+        'jumlah',
+      ])
+
+      return {
+        layer,
+        warna,
+        lokasi: parse,
       }
     },
   },
